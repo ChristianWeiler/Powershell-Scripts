@@ -1,0 +1,59 @@
+$mailbox = "mailbox@domain.com"
+# PSETID_Note GUID
+$noteGuid = "0006200E-0000-0000-C000-000000000046"
+
+# Build sticky note payload
+$body = @{
+    subject = ""   # Sticky notes typically have no subject
+    body = @{
+        contentType = "Text"
+        content     = "This is a sticky note created via Microsoft Graph"
+    }
+    singleValueExtendedProperties = @(
+        # PR_MESSAGE_CLASS
+        @{
+            id    = "String 0x001A"
+            value = "IPM.StickyNote"
+        },
+
+        # PidLidNoteColor (0x8B00)
+        @{
+            id    = "Integer {$noteGuid} Id 0x8B00"
+            value = "3"   # Yellow
+        },
+
+        # PidLidNoteHeight (0x8B02)
+        @{
+            id    = "Integer {$noteGuid} Id 0x8B02"
+            value = "200"
+        },
+
+        # PidLidNoteWidth (0x8B03)
+        @{
+            id    = "Integer {$noteGuid} Id 0x8B03"
+            value = "166"
+        },
+
+        # PidLidNoteX (Left) (0x8B04)
+        @{
+            id    = "Integer {$noteGuid} Id 0x8B04"
+            value = "80"
+        },
+
+        # PidLidNoteY (Top) (0x8B05)
+        @{
+            id    = "Integer {$noteGuid} Id 0x8B05"
+            value = "80"
+        }
+    )
+}
+
+# Create the sticky note
+$uri = "https://graph.microsoft.com/v1.0/users/$mailbox/mailFolders/notes/messages"
+
+$response = Invoke-MgGraphRequest `
+    -Method POST `
+    -Uri $uri `
+    -Body ($body | ConvertTo-Json -Depth 6)
+
+Write-Host "Sticky note created. ID:" $response.id
